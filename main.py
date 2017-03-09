@@ -3,7 +3,7 @@ s3 = boto3.resource('s3')
 
 SRCBUCKET = "searchimagestricon"
 TARGETBUCKET = "teargetimagestricon"
-KEY_SOURCE = "s1.jpeg"
+KEY_SOURCE = "empire.jpg"
 
 FEATURES_BLACKLIST = ("Landmarks", "Emotions", "Pose", "Quality", "BoundingBox", "Confidence")
 
@@ -27,7 +27,7 @@ length_target_list = len (Target_List)
 
 
 
-# ----------------------------- If Object, Print out the Labels ----------------------------------------
+
 
 
 
@@ -51,7 +51,7 @@ def detect_facial_expression(bucket, key, attributes=['ALL'], region="us-west-2"
 
 # ------------------------------------------ Compare Faces----------------------------------------------
 
-def compare_faces(bucket, key, bucket_target, key_target, threshold=70, region="us-west-2"):
+def compare_faces(bucket, key, bucket_target, key_target, threshold=80, region="us-west-2"):
 	rekognition = boto3.client("rekognition", region)
 	response = rekognition.compare_faces(
 		SourceImage={
@@ -92,7 +92,7 @@ def detect_labels(bucket, key, max_labels=10, min_confidence=95, region="us-west
 
 
 
-# ----------------------------If Face, compare face with TargetBucket -----------------------------------
+# ----------------------------If Face, compare face with TargetBucket images-----------------------------------
 
 for label in detect_labels(SRCBUCKET, KEY_SOURCE):
 	# print "{Name} - {Confidence}%".format(**label)
@@ -119,12 +119,25 @@ for label in detect_labels(SRCBUCKET, KEY_SOURCE):
 		for face in detect_facial_expression(SRCBUCKET, KEY_SOURCE):
 			print "Face ({Confidence}%)".format(**face)
 
+
+
+
 			#emotions
-			for emotion in face['Emotions']:
-				print "  {Type} : {Confidence}%".format(**emotion)
+			no_emotions_detected = len(face['Emotions'])
+
+			for i in range(0, no_emotions_detected):
+				emotion = (face['Emotions'][i])
+				if (emotion['Confidence'] > 85):
+					print emotion['Type'], emotion['Confidence']
 
 
-			# facial features
-			for feature, data in face.iteritems():
-				if feature not in FEATURES_BLACKLIST:
-					print "  {feature}({data[Value]}) : {data[Confidence]}%".format(feature=feature, data=data)
+
+			# # facial features
+			# for feature, data in face.iteritems():
+			# 	if feature not in FEATURES_BLACKLIST:
+			# 		# print "  {feature}({data[Value]}) : {data[Confidence]}%".format(feature=feature, data=data)
+			# 		print data
+
+
+	else:
+		print "{Name} - {Confidence}%".format(**label)
