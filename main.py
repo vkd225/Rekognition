@@ -1,14 +1,22 @@
 import boto3
 s3 = boto3.resource('s3')
 
+
 SRCBUCKET = "searchimagestricon"
 TARGETBUCKET = "teargetimagestricon"
-KEY_SOURCE = "empire.jpg"
 
 FEATURES_BLACKLIST = ("Landmarks", "Emotions", "Pose", "Quality", "BoundingBox", "Confidence")
 
-# Target Bucket
 
+# ----------------------------- Load image from system and send it to S3 Bucket -----------------------
+
+KEY_SOURCE = raw_input("Enter Fileneame: ")
+s3.meta.client.upload_file(KEY_SOURCE, 'searchimagestricon', KEY_SOURCE)
+
+print ("File Upload")
+
+
+# Target Bucket
 Target_List = []
 for bucket in s3.buckets.all():
 	source = (bucket.name)
@@ -17,18 +25,6 @@ for bucket in s3.buckets.all():
 			out =  (key.key)
 			Target_List.append(out)
 length_target_list = len (Target_List)
-
-
-
-
-
-
-# ----------------------------- Load image from system and send it to S3 Bucket -----------------------
-
-
-
-
-
 
 
 # --------------------------------- Detect Facial Expressions ------------------------------------------
@@ -110,8 +106,7 @@ for label in detect_labels(SRCBUCKET, KEY_SOURCE):
 			if (match > 0):
 				# one match for each target face
 				for match in matches:
-					print KEY_SOURCE + " matches " + KEY_TARGET + " with "
-					print "  Similarity : {}%".format(match['Similarity'])
+					print KEY_SOURCE + " matches " + KEY_TARGET + " with " + "Similarity : {}%".format(match['Similarity'])
 
 					# print "Target Face ({Confidence}%)".format(**match['Face'])
 
@@ -141,3 +136,5 @@ for label in detect_labels(SRCBUCKET, KEY_SOURCE):
 
 	else:
 		print "{Name} - {Confidence}%".format(**label)
+
+
